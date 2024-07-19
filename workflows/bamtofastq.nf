@@ -82,10 +82,10 @@ workflow BAMTOFASTQ {
     ch_versions = ch_versions.mix(PRE_CONVERSION_QC.out.versions)
 
     // MODULE: Check if SINGLE or PAIRED-END
-
-    CHECK_IF_PAIRED_END(ch_input, fasta)
-
     if (params.set_paired_single=="auto") {
+
+        CHECK_IF_PAIRED_END(ch_input, fasta)
+
         ch_paired_end = ch_input.join(CHECK_IF_PAIRED_END.out.paired_end)
         ch_single_end = ch_input.join(CHECK_IF_PAIRED_END.out.single_end)
 
