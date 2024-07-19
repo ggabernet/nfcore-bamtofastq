@@ -107,7 +107,7 @@ workflow BAMTOFASTQ {
 
         ch_versions = ch_versions.mix(CHECK_IF_PAIRED_END.out.versions)
     } else if (params.set_paired_single=="single") {
-        ch_input_new = ch_input.map{ meta, bam, bai, txt ->
+        ch_input_new = ch_input.map{ meta, bam, bai ->
                 [ [ id : meta.id,
                 filetype : meta.filetype,
                 single_end : true ],
@@ -115,7 +115,7 @@ workflow BAMTOFASTQ {
                 bai
                 ] }
     } else if (params.set_paired_single=="paired") {
-        ch_input_new = ch_input.map{ meta, bam, bai, txt ->
+        ch_input_new = ch_input.map{ meta, bam, bai ->
                 [ [ id : meta.id,
                 filetype : meta.filetype,
                 single_end : false ],
