@@ -85,26 +85,47 @@ workflow BAMTOFASTQ {
 
     CHECK_IF_PAIRED_END(ch_input, fasta)
 
-    ch_paired_end = ch_input.join(CHECK_IF_PAIRED_END.out.paired_end)
-    ch_single_end = ch_input.join(CHECK_IF_PAIRED_END.out.single_end)
+    if (params.set_paired_single=="auto") {
+        ch_paired_end = ch_input.join(CHECK_IF_PAIRED_END.out.paired_end)
+        ch_single_end = ch_input.join(CHECK_IF_PAIRED_END.out.single_end)
 
-    // Combine channels into new input channel for conversion + add info about single/paired to meta map
-    ch_input_new = ch_single_end.map{ meta, bam, bai, txt ->
-            [ [ id : meta.id,
-            filetype : meta.filetype,
-            single_end : true ],
-            bam,
-            bai
-            ] }
-        .mix(ch_paired_end.map{ meta, bam, bai, txt ->
-            [ [ id : meta.id,
-            filetype : meta.filetype,
-            single_end : false ],
-            bam,
-            bai
-            ] })
+        // Combine channels into new input channel for conversion + add info about single/paired to meta map
+        ch_input_new = ch_single_end.map{ meta, bam, bai, txt ->
+                [ [ id : meta.id,
+                filetype : meta.filetype,
+                single_end : true ],
+                bam,
+                bai
+                ] }
+            .mix(ch_paired_end.map{ meta, bam, bai, txt ->
+                [ [ id : meta.id,
+                filetype : meta.filetype,
+                single_end : false ],
+                bam,
+                bai
+                ] })
 
-    ch_versions = ch_versions.mix(CHECK_IF_PAIRED_END.out.versions)
+        ch_versions = ch_versions.mix(CHECK_IF_PAIRED_END.out.versions)
+    } else if (params.set_paired_single=="single") {
+        ch_input_new = ch_input.map{ meta, bam, bai, txt ->
+                [ [ id : meta.id,
+                filetype : meta.filetype,
+                single_end : true ],
+                bam,
+                bai
+                ] }
+    } else if (params.set_paired_single=="paired") {
+        ch_input_new = ch_input.map{ meta, bam, bai, txt ->
+                [ [ id : meta.id,
+                filetype : meta.filetype,
+                single_end : false ],
+                bam,
+                bai
+                ] }
+    } else {
+        error "Invalid value for set_paired_single: ${params.set_paired_single}"
+    }
+
 
 
     // Extract only reads mapping to a chromosome
